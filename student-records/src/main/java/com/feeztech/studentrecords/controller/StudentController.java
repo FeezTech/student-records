@@ -1,20 +1,18 @@
 package com.feeztech.studentrecords.controller;
 
-import com.feeztech.studentrecords.services.StudentService;
+
 import com.feeztech.studentrecords.model.StudentEntity;
+import com.feeztech.studentrecords.services.StudentServiceToImplement;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -24,26 +22,28 @@ import java.util.Optional;
 public class StudentController {
 
 
-    public StudentController(StudentService studentService) {
-        this.studentService = studentService;
+    public StudentController(StudentServiceToImplement studentServiceToImplement) {
+        this.studentServiceToImplement = studentServiceToImplement;
     }
 
-    private StudentService studentService;
+    private final StudentServiceToImplement studentServiceToImplement;
+
 
     @GetMapping("/students")
     @Operation(
             summary = "Get All Students",
             description = "Fetch the list of all student records."
     )
-    public ResponseEntity <List <StudentEntity>> getStudentRecord(@RequestParam Optional<Integer> page, @RequestParam Optional<String> sortBy) {
-        return new ResponseEntity<>(studentService.getAllStudentRecord(), HttpStatusCode.valueOf(HttpServletResponse.SC_OK));
+    public ResponseEntity <List <StudentEntity>> getStudentRecord() {
+
+        return new ResponseEntity<>(studentServiceToImplement.getAllStudentRecord(), HttpStatusCode.valueOf(HttpServletResponse.SC_OK));
     }
 
     @GetMapping("/students/{id}")
     @Operation(summary = "Get Student by ID", description = "Fetch a student record by providing their ID.")
     public ResponseEntity  <StudentEntity> getStudentById(@PathVariable int id) {
 
-        StudentEntity studentEntity = studentService.getStudentById(id);
+        StudentEntity studentEntity = studentServiceToImplement.getStudentById(id);
 
         if (studentEntity != null) {
             return new ResponseEntity<>(studentEntity, HttpStatusCode.valueOf(HttpServletResponse.SC_OK));
@@ -57,7 +57,7 @@ public class StudentController {
     public ResponseEntity <?> addStudentDetails(@RequestBody StudentEntity studentEntity) {
 
         try {
-            StudentEntity saveDetails = studentService.addStudentDetails(studentEntity);
+            StudentEntity saveDetails = studentServiceToImplement.addStudentDetails(studentEntity);
             return new ResponseEntity<>(saveDetails, HttpStatusCode.valueOf(HttpServletResponse.SC_CREATED));
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatusCode.valueOf(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
@@ -72,7 +72,7 @@ public class StudentController {
     public ResponseEntity <String> updateStudentDetails (@PathVariable int id, @RequestBody StudentEntity studentEntity) {
         StudentEntity updateDetails = null;
         try {
-            updateDetails = studentService.updateStudentDetails(id, studentEntity);
+            updateDetails = studentServiceToImplement.updateStudentDetails(id, studentEntity);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatusCode.valueOf(HttpServletResponse.SC_BAD_REQUEST));
         }
@@ -90,15 +90,32 @@ public class StudentController {
     )
     public ResponseEntity  <String> deleteStudentDetailsById(@PathVariable int id) {
 
-        StudentEntity studentEntity = studentService.getStudentById(id);
+        StudentEntity studentEntity = studentServiceToImplement.getStudentById(id);
 
         if (studentEntity != null) {
-            studentService.deleteStudentDetailsById(id);
+            studentServiceToImplement.deleteStudentDetailsById(id);
             return new ResponseEntity<> ("Student Details Deleted Successfully", HttpStatusCode.valueOf(HttpServletResponse.SC_OK));
         }
         else
             return new ResponseEntity<>("Fail to Delete", HttpStatusCode.valueOf(HttpServletResponse.SC_NOT_FOUND));
     }
 
+    @GetMapping("/students/sort/{field}")
+    public ResponseEntity <List<StudentEntity>> getStudentRecordsBySorting(@PathVariable String field) {
+        List<StudentEntity> allStudentRecords = studentServiceToImplement.getAllStudentRecordsBySorting(field);
+        return new ResponseEntity<>(allStudentRecords, HttpStatusCode.valueOf(HttpServletResponse.SC_ACCEPTED));
+    }
+
+    @GetMapping("/students/sort/{offset}/{pageSize}")
+    public ResponseEntity<Page<StudentEntity>> getStudentRecordsByPagination(@PathVariable int offset, @PathVariable int pageSize) {
+        Page<StudentEntity> studentRecordsByPagination = studentServiceToImplement.getAllStudentRecordsByPagination(offset, pageSize);
+        return new ResponseEntity<>(studentRecordsByPagination, HttpStatusCode.valueOf(HttpServletResponse.SC_CREATED));
+    }
+
+    @GetMapping("/students/sortandpagination/{offset}/{pageSize}/{field}")
+    public ResponseEntity<Page<StudentEntity>> getStudentRecordsByPaginationAndSorting(@PathVariable int offset, @PathVariable int pageSize, @PathVariable String field) {
+        Page<StudentEntity> studentRecordsByPagination = studentServiceToImplement.getAllStudentRecordsByPaginationAndSorting(offset, pageSize, field);
+        return new ResponseEntity<>(studentRecordsByPagination, HttpStatusCode.valueOf(HttpServletResponse.SC_CREATED));
+    }
 
 }
