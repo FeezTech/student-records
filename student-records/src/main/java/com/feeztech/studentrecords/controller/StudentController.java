@@ -2,7 +2,7 @@ package com.feeztech.studentrecords.controller;
 
 
 import com.feeztech.studentrecords.model.StudentEntity;
-import com.feeztech.studentrecords.services.StudentServiceToImplement;
+import com.feeztech.studentrecords.studentimplementation.StudentServiceToImplement;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;

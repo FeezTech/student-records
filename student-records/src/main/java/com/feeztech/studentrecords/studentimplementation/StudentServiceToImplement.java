@@ -1,4 +1,4 @@
-package com.feeztech.studentrecords.services;
+package com.feeztech.studentrecords.studentimplementation;
 
 import com.feeztech.studentrecords.model.StudentEntity;
 import org.springframework.data.domain.Page;
